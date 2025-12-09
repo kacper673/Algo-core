@@ -6,7 +6,6 @@
 
 extern std::string filePath = "YOUR_PATH";
 
-//bubble sort
 template<typename T>
 void bubbleSort(T* arr, size_t size, bool inspect = false) {
 	if (size < 2) return;
@@ -259,6 +258,118 @@ void shellSort(T* arr, size_t size, bool inspect = false) {
 }
 
 
+template<typename T>
+void bucketSort(T* arr, size_t size, bool inspect = false) {
+	if (size < 2) return;
+
+	unsigned long swaps = 0;
+	unsigned long comps = 0;
+	std::chrono::high_resolution_clock::time_point t0;
+	t0 = std::chrono::high_resolution_clock::now();
+
+	std::string path = filePath + "/bucketSort.csv";
+
+	std::vector<std::vector<T>> buckets(size);
+
+	T min = arr[0];
+	T max = arr[0];
+
+
+	for (size_t i = 1; i < size; i++) {
+		if (arr[i] < min) min = arr[i];
+		if (arr[i] > max) max = arr[i];
+	}
+
+	for (auto& it : buckets) {
+		std::sort(it.begin(), it.end());
+	}
+
+	size_t idx = 0;
+	for (auto& bucket : buckets) {
+		for (auto& it : bucket) {
+			if (idx == size) return;
+			arr[idx++] = it;
+		}
+	}
+
+
+	if (inspect) {
+		double elapsed = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - t0).count();
+
+		std::cout << "\n---shellSort---\n";
+		std::cout << "arr size = " << size << "\n";
+		std::cout << "Comparisons = " << comps << "\n";
+		std::cout << "Swaps/assignments = " << swaps << "\n";
+		std::cout << "Execution time = " << elapsed << " ms\n";
+
+		std::ofstream log(path, std::ios::app);
+		if (log.is_open()) {
+			log << size << "," << comps << "," << swaps << "," << elapsed << "\n";
+			std::cout << "Saved " << path << "\n";
+		}
+	}
+
+}
+
+
+template<typename T>
+void partialSort(T* arr, size_t size, size_t first = 0, bool inspect = false) {    //if no first given - just selection sort
+	if (first > size - 2) return;
+	if (size < 2) return;
+
+	unsigned long swaps = 0;
+	unsigned long comps = 0;
+	std::chrono::high_resolution_clock::time_point t0 = std::chrono::high_resolution_clock::now();
+
+	std::string path = filePath + "/partialSort.csv";
+
+	for (size_t j = first; j < size - 1; j++) {
+		T min = arr[j];
+		size_t idx = j;
+		for (size_t i = j + 1; i < size; i++) {
+			if (arr[i] < min) {
+				if (inspect) comps++;
+				min = arr[i];
+				idx = i;
+			}
+			else {
+				if (inspect) comps++;
+			}
+		}
+
+		if (idx != j) {
+			arr[idx] = arr[j];
+			arr[j] = min;
+			if (inspect) swaps++;
+		}
+
+	}
+
+	if (inspect) {
+		auto elapsed = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - t0).count();
+		std::cout << "\n---partialSort---\n";
+		std::cout << "arr size = " << size << "\n";
+		std::cout << "Comaparisons = " << comps << "\n";
+		std::cout << "Swaps = " << swaps << "\n";
+		std::cout << "Executuion time = " << elapsed << " ms\n";
+
+		std::ofstream log(path, std::ios::app);
+		if (log.is_open()) {
+			log << size << "," << comps << "," << swaps << "," << elapsed << "\n";
+			std::cout << "Saved " << path << "\n";
+		}
+		log.close();
+
+	}
+}
+
+template<typename T>
+void hybridSort(T* arr, size_t size, bool inspect = false) {
+	if (size <= 5000) insertionSort(arr, size, inspect);
+	else if (size <= 50000) shellSort(arr, size, inspect);
+	else combSort(arr, size, inspect);
+
+}
 
 
 //printing
@@ -284,6 +395,15 @@ void clearLogs() {
 	log.open(path);
 	log.close();
 	path = filePath+ "/shellSort.csv";
+	log.open(path);
+	log.close();
+	path = filePath + "/bucketlSort.csv";
+	log.open(path);
+	log.close();
+	path = filePath + "/partialSort.csv";
+	log.open(path);
+	log.close();
+	path = filePath + "/hybridSort.csv";
 	log.open(path);
 	log.close();
 }
